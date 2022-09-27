@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="js/three/three.min.js"></script>
+    <script src="js/three/OrbitControls.js"></script>
+    <script src="js/three/GLTFLoader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.4.1/gsap.min.js"></script>
+    <script type="module">
+        import { Threejs } from './js/index.js';
+        import { createObjects , createColliders } from './js/methods.js';
+        import { createLights } from './js/particleClearance.js';
+        window.onload = function () {
+            let colliders = [];
+            let clickPointX , clickPointY; //记录鼠标点击的位置
+
+            const { scene , camera, renderer , controls } = new Threejs({
+                el:"app",
+                isAxesHelper:true,
+                orbitControls :false
+            });
+            
+            const render = () =>  {
+                renderer.render(scene, camera);
+                controls && controls.update();
+                requestAnimationFrame(render);
+            };
+            render();
+
+            //鼠标按下时，记录点击位置
+            document.addEventListener('mousedown', (event) => {
+                event.preventDefault();
+                if (event.which == 1) {
+                    clickPointX = event.clientX;
+                    clickPointY = event.clientY;
+                }
+            });
+            
+            // 鼠标点击移动
+            document.addEventListener('mousedown', () => {
+                //相机旋转
+                document.onmousemove = (event) => {
+                    event.preventDefault();
+                    const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+                    const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+                    const _euler = new THREE.Euler(0, 0, 0, 'YXZ');
+                    _euler.setFromQuaternion(camera.quaternion);
+                    _euler.y += movementX * 0.002 * 1.0;
+                    _euler.x += movementY * 0.002 * 1.0;
+                    _euler.x = Math.max((Math.PI / 2) - Math.PI, Math.min((Math.PI / 2) - 0, _euler.x));
+                    camera.quaternion.setFromEuler(_euler);
+                };
+            });
+
+            // 鼠标离开
+            document.addEventListener('mouseup', (event) => {
+                event.preventDefault();
+                // 鼠标抬起时对比点击位置，如果移动了，则执行旋转视角，如果点击点未移动则执行相机移动
+                if (((event.which == 1) && clickPointX == event.clientX && clickPointY == event.clientY)) {
+                    // Set mouse and raycaster. 获取点击物体坐标位置
+                    const raycaster = new THREE.Raycaster();
+                    const mouse = new THREE.Vector2();
+
+                    // 计算出 点击屏幕 的 x 和 y 坐标
+                    mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+                    mouse.y = - (event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+
+                    // 使用光线投射器检测交叉点。
+                    raycaster.setFromCamera(mouse, camera);
+
+                    //抓取所有可以相交的对象。
+                    // 获取点击的位置 获取位置坐标
+                    var intersects = raycaster.intersectObjects( colliders );
+                    if (intersects.length > 0) {
+                        intersects[0].object.name === 'collider-floor' && TweenLite.to(camera.position, { ...intersects[0].point, y: 2, duration: 2 });
+                    }
+                }
+                document.onmousemove = null;
+            });
+
+            // 创建 添加 模型 并设置材质
+            createColliders(scene,colliders);
+            createObjects(scene);
+            // 添加粒子光
+            createLights(scene);
+            
+        }
+     
+    </script>
+  </body>
+</html>
