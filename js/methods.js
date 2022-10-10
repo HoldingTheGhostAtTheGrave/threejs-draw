@@ -5,23 +5,24 @@ export function createObjects(scene) {
         'model/gallery.glb',
         gltf => {
             gltf.scene.traverse(child => {
-            switch(child.name) {
-                case 'walls': // 模型物体
-                    initWalls(child)
-                    break
-                case 'stairs': // 模型
-                    initStairs(child)
-                    break
-            }
-            //设置展画边框贴图
-            if(child.name.includes('paint')) {
-                initFrames(child)
-            }
-            //设置展画图片贴图
-            if(child.name.includes('draw')) {
-                initDraws(child)
-            }
-        })
+                console.log(child.name);
+                switch(child.name) {
+                    case 'walls': // 模型物体
+                        initWalls(child)
+                        break
+                    case 'stairs': // 模型
+                        initStairs(child)
+                        break
+                }
+                //设置展画边框贴图
+                if(child.name.includes('paint')) {
+                    initFrames(child)
+                }
+                //设置展画图片贴图
+                if(child.name.includes('draw')) {
+                    initDraws(child)
+                }
+            })
             scene.add(gltf.scene)
         }
     )
@@ -64,7 +65,8 @@ function initStairs(child) {
 function initWalls(child) {
     // 设置模型材质颜色
     child.material = new THREE.MeshStandardMaterial({
-        color: 0xffffff
+        color: 0xffffff,
+        // map:new THREE.TextureLoader().load(`img/${'db'}.webp`)
     })
     // 设置金属性
     child.material.roughness = 0.5

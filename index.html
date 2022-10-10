@@ -10,9 +10,26 @@
         margin: 0;
         padding: 0;
       }
+      body{
+        cursor: pointer;
+      }
+      .leftTop{
+        /* width: 200px;
+        height: 160px; */
+        background: red;
+        z-index: 999;
+        position: absolute;
+        top: 30px;
+        left: 50px;
+      }
+      #app{
+        width: 100vw;
+        height: 100vh;
+      }
     </style>
   </head>
   <body>
+    <div class="leftTop" id="leftTop"></div>
     <div id="app"></div>
     <script src="js/three/three.min.js"></script>
     <script src="js/three/OrbitControls.js"></script>
@@ -25,15 +42,43 @@
         window.onload = function () {
             let colliders = [];
             let clickPointX , clickPointY; //记录鼠标点击的位置
+            let sphere;
+
+            document.getElementById('leftTop').style.width = window.innerWidth / 8 + 'px';
+            document.getElementById('leftTop').style.height = window.innerHeight / 6 + 'px';
 
             const { scene , camera, renderer , controls } = new Threejs({
                 el:"app",
-                isAxesHelper:true,
-                orbitControls :false
+                isAxesHelper:false,
+                orbitControls :false,
+                cameraPosition:[-10 , 2 ,1]
             });
-            
+
+            const leftTopCanvas = new Threejs({
+                el:"leftTop",
+                isAxesHelper:true,
+                orbitControls :false,
+                cameraPosition:[0 , 0 ,11]
+            });
+
+            const geometry = new THREE.PlaneGeometry( 25, 16 );
+            const material = new THREE.MeshBasicMaterial( {
+                map:new THREE.TextureLoader().load(`img/left.jpg`)
+            });
+            const plane = new THREE.Mesh( geometry, material );
+            leftTopCanvas.scene.add( plane );
+
+            const geometry1 = new THREE.DodecahedronGeometry( 1, 0 );
+            const material1 = new THREE.MeshBasicMaterial( {color: 0xffff00 } );
+            const cone = new THREE.Mesh( geometry1, material1 );
+            cone.position.set(-(10 / 2) , (2 / 8),( 1  ))
+            console.log(cone);
+            leftTopCanvas.scene.add( cone );
+
             const render = () =>  {
                 renderer.render(scene, camera);
+                leftTopCanvas.renderer.render(leftTopCanvas.scene, leftTopCanvas.camera);
+                leftTopCanvas.controls && leftTopCanvas.controls.update();
                 controls && controls.update();
                 requestAnimationFrame(render);
             };
@@ -47,7 +92,19 @@
                     clickPointY = event.clientY;
                 }
             });
-            
+
+            // 点击鼠标标记移动位置
+            const mousemove = ({ x , y ,z }) => {
+                const geometry = new THREE.TetrahedronGeometry( 0.2 ,0 );
+                const material = new THREE.MeshBasicMaterial( { color: 0x00ccff } );
+                sphere = new THREE.Mesh( geometry, material );
+                sphere.position.set(x , 0.2 ,z );
+                sphere.rotation.x = -0.97;
+                sphere.rotation.y = Math.PI / 4;
+                TweenLite.to(sphere.position,{ y: 0.6 , repeat: -1 , duration: 0.6 }); // 
+                scene.add( sphere );
+            }
+
             // 鼠标点击移动
             document.addEventListener('mousedown', () => {
                 //相机旋转
@@ -84,7 +141,13 @@
                     // 获取点击的位置 获取位置坐标
                     var intersects = raycaster.intersectObjects( colliders );
                     if (intersects.length > 0) {
-                        intersects[0].object.name === 'collider-floor' && TweenLite.to(camera.position, { ...intersects[0].point, y: 2, duration: 2 });
+                        if(intersects[0].object.name === 'collider-floor'){
+                            mousemove(intersects[0].point);
+                            TweenLite.to(camera.position, { ...intersects[0].point, y: 2, duration: 2 , onComplete(){
+                                scene.remove(sphere);
+                            } });
+                            TweenLite.to(cone.position,{x:intersects[0].point.x / 1.6,y: -(intersects[0].point.z / 2) });
+                        }
                     }
                 }
                 document.onmousemove = null;

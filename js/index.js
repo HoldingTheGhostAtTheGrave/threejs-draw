@@ -6,11 +6,13 @@ export class Threejs {
     isAxesHelper = null;
     controls = null;
     el = null;
+    cameraPosition = null;
     orbitControls = false;
-    constructor({ el, isAxesHelper = false , orbitControls = false}) {
+    constructor({ el, isAxesHelper = false , orbitControls = false , cameraPosition }) {
         this.isAxesHelper = isAxesHelper;
         this.el = document.getElementById(el);
         this.orbitControls = orbitControls ;
+        this.cameraPosition = cameraPosition || [2, 2, 6];
         this._init();
     }
     _init() {
@@ -31,18 +33,18 @@ export class Threejs {
     createCamera() {
         this.camera = new THREE.PerspectiveCamera(
             75,
-            window.innerWidth / window.innerHeight,
+            this.el.offsetWidth / this.el.offsetHeight,
             0.1,
             1000
         );
-        this.camera.position.set(-10, 2, 1);
+        this.camera.position.set(...this.cameraPosition);
     }
     // 创建渲染器
     createRenderer() {
         this.renderer = new THREE.WebGLRenderer({
             antialias: false,
         });
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setSize(this.el.offsetWidth, this.el.offsetHeight);
         this.renderer.render(this.scene, this.camera);
         this.renderer.outputEncoding = THREE.sRGBEncoding;
         this.renderer.setPixelRatio(window.devicePixelRatio);
