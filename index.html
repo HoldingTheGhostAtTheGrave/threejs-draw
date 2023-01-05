@@ -61,18 +61,24 @@
                 cameraPosition:[0 , 0 ,11]
             });
 
-            const geometry = new THREE.PlaneGeometry( 25, 16 );
-            const material = new THREE.MeshBasicMaterial( {
-                map:new THREE.TextureLoader().load(`img/left.jpg`)
-            });
-            const plane = new THREE.Mesh( geometry, material );
-            leftTopCanvas.scene.add( plane );
+            // const geometry = new THREE.PlaneGeometry( 25, 16 );
+            // const material = new THREE.MeshBasicMaterial( {
+            //     map:new THREE.TextureLoader().load(`img/left.jpg`)
+            // });
+            // const plane = new THREE.Mesh( geometry, material );
+            // leftTopCanvas.scene.add( plane );
 
+            // 添加背景图
+            const loader = new THREE.TextureLoader();
+            const bgTexture = loader.load(`img/left.jpg`);
+            leftTopCanvas.scene.background = bgTexture;
+
+
+            // 添加标注物体
             const geometry1 = new THREE.DodecahedronGeometry( 1, 0 );
             const material1 = new THREE.MeshBasicMaterial( {color: 0xffff00 } );
             const cone = new THREE.Mesh( geometry1, material1 );
             cone.position.set(-(10 / 2) , (2 / 8),( 1  ))
-            console.log(cone);
             leftTopCanvas.scene.add( cone );
 
             const render = () =>  {
