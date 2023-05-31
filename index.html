@@ -1,166 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-      }
-      body{
-        cursor: pointer;
-      }
-      .leftTop{
-        /* width: 200px;
-        height: 160px; */
-        background: red;
-        z-index: 999;
-        position: absolute;
-        top: 30px;
-        left: 50px;
-      }
-      #app{
-        width: 100vw;
-        height: 100vh;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="leftTop" id="leftTop"></div>
-    <div id="app"></div>
-    <script src="js/three/three.min.js"></script>
-    <script src="js/three/OrbitControls.js"></script>
-    <script src="js/three/GLTFLoader.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.4.1/gsap.min.js"></script>
-    <script type="module">
-        import { Threejs } from './js/index.js';
-        import { createObjects , createColliders } from './js/methods.js';
-        import { createLights } from './js/particleClearance.js';
-        window.onload = function () {
-            let colliders = [];
-            let clickPointX , clickPointY; //记录鼠标点击的位置
-            let sphere;
 
-            document.getElementById('leftTop').style.width = window.innerWidth / 8 + 'px';
-            document.getElementById('leftTop').style.height = window.innerHeight / 6 + 'px';
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
 
-            const { scene , camera, renderer , controls } = new Threejs({
-                el:"app",
-                isAxesHelper:false,
-                orbitControls :false,
-                cameraPosition:[-10 , 2 ,1]
-            });
+    body {
+      cursor: pointer;
+    }
 
-            const leftTopCanvas = new Threejs({
-                el:"leftTop",
-                isAxesHelper:true,
-                orbitControls :false,
-                cameraPosition:[0 , 0 ,11]
-            });
+    #app {
+      width: 100vw;
+      height: 100vh;
+    }
 
-            const geometry = new THREE.PlaneGeometry( 25, 16 );
-            const material = new THREE.MeshBasicMaterial( {
-                map:new THREE.TextureLoader().load(`img/left.jpg`)
-            });
-            const plane = new THREE.Mesh( geometry, material );
-            leftTopCanvas.scene.add( plane );
+    .text{
+      font-size: 30px;
+      color: #fff;
+      position: fixed;
+      margin: 50px auto;
+      left: 0;
+      right: 0;
+      text-align: center;
+    }
+  </style>
+</head>
 
-            const geometry1 = new THREE.DodecahedronGeometry( 1, 0 );
-            const material1 = new THREE.MeshBasicMaterial( {color: 0xffff00 } );
-            const cone = new THREE.Mesh( geometry1, material1 );
-            cone.position.set(-(10 / 2) , (2 / 8),( 1  ))
-            console.log(cone);
-            leftTopCanvas.scene.add( cone );
+<body>
+  <div class="text"></div>
+  <div id="app"></div>
+  <script src="js/three/three.min.js"></script>
+  <script src="js/three/OrbitControls.js"></script>
+  <script src="js/three/GLTFLoader.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.4.1/gsap.min.js"></script>
+  <script type="module">
+    import { Threejs } from "./js/index.js";
+    import { createObjects, createColliders } from "./js/methods.js";
+    import { createLights } from "./js/particleClearance.js";
+    import {setText} from './js/domMethods.js'
+    window.onload = function () {
+      let colliders = [];
+      let clickPointX, clickPointY; //记录鼠标点击的位置
+      let sphere = [] , index = 0;
 
-            const render = () =>  {
-                renderer.render(scene, camera);
-                leftTopCanvas.renderer.render(leftTopCanvas.scene, leftTopCanvas.camera);
-                leftTopCanvas.controls && leftTopCanvas.controls.update();
-                controls && controls.update();
-                requestAnimationFrame(render);
-            };
-            render();
+      const { scene, camera, renderer, controls } = new Threejs({
+        el: "app",
+        isAxesHelper: false,
+        orbitControls: false,
+        cameraPosition: [-10, 2.5, 1],
+      });
 
-            //鼠标按下时，记录点击位置
-            document.addEventListener('mousedown', (event) => {
-                event.preventDefault();
-                if (event.which == 1) {
-                    clickPointX = event.clientX;
-                    clickPointY = event.clientY;
-                }
-            });
+      const render = () => {
+        renderer.render(scene, camera);
+        // 控制器
+        controls && controls.update();
+        requestAnimationFrame(render);
+      };
+      render();
 
-            // 点击鼠标标记移动位置
-            const mousemove = ({ x , y ,z }) => {
-                const geometry = new THREE.TetrahedronGeometry( 0.2 ,0 );
-                const material = new THREE.MeshBasicMaterial( { color: 0x00ccff } );
-                sphere = new THREE.Mesh( geometry, material );
-                sphere.position.set(x , 0.2 ,z );
-                sphere.rotation.x = -0.97;
-                sphere.rotation.y = Math.PI / 4;
-                TweenLite.to(sphere.position,{ y: 0.6 , repeat: -1 , duration: 0.6 }); // 
-                scene.add( sphere );
-            }
-
-            // 鼠标点击移动
-            document.addEventListener('mousedown', () => {
-                //相机旋转
-                document.onmousemove = (event) => {
-                    event.preventDefault();
-                    const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-                    const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-                    const _euler = new THREE.Euler(0, 0, 0, 'YXZ');
-                    _euler.setFromQuaternion(camera.quaternion);
-                    _euler.y += movementX * 0.002 * 1.0;
-                    _euler.x += movementY * 0.002 * 1.0;
-                    _euler.x = Math.max((Math.PI / 2) - Math.PI, Math.min((Math.PI / 2) - 0, _euler.x));
-                    camera.quaternion.setFromEuler(_euler);
-                };
-            });
-
-            // 鼠标离开
-            document.addEventListener('mouseup', (event) => {
-                event.preventDefault();
-                // 鼠标抬起时对比点击位置，如果移动了，则执行旋转视角，如果点击点未移动则执行相机移动
-                if (((event.which == 1) && clickPointX == event.clientX && clickPointY == event.clientY)) {
-                    // Set mouse and raycaster. 获取点击物体坐标位置
-                    const raycaster = new THREE.Raycaster();
-                    const mouse = new THREE.Vector2();
-
-                    // 计算出 点击屏幕 的 x 和 y 坐标
-                    mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
-                    mouse.y = - (event.clientY / renderer.domElement.clientHeight) * 2 + 1;
-
-                    // 使用光线投射器检测交叉点。
-                    raycaster.setFromCamera(mouse, camera);
-
-                    //抓取所有可以相交的对象。
-                    // 获取点击的位置 获取位置坐标
-                    var intersects = raycaster.intersectObjects( colliders );
-                    if (intersects.length > 0) {
-                        if(intersects[0].object.name === 'collider-floor'){
-                            mousemove(intersects[0].point);
-                            TweenLite.to(camera.position, { ...intersects[0].point, y: 2, duration: 2 , onComplete(){
-                                scene.remove(sphere);
-                            } });
-                            TweenLite.to(cone.position,{x:intersects[0].point.x / 1.6,y: -(intersects[0].point.z / 2) });
-                        }
-                    }
-                }
-                document.onmousemove = null;
-            });
-
-            // 创建 添加 模型 并设置材质
-            createColliders(scene,colliders);
-            createObjects(scene);
-            // 添加粒子光
-            createLights(scene);
-            
+      //鼠标按下时，记录点击位置
+      document.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+        if (event.which == 1) {
+          clickPointX = event.clientX;
+          clickPointY = event.clientY;
         }
-     
-    </script>
-  </body>
+      });
+
+      // 点击鼠标标记移动位置
+      const mousemove = ({ x, y, z }) => {
+        const geometry = new THREE.TetrahedronGeometry(0.2, 0);
+        const material = new THREE.MeshBasicMaterial({ color: 0x00ccff });
+        sphere[index] = new THREE.Mesh(geometry, material);
+        sphere[index].position.set(x, 0.2, z);
+        sphere[index].rotation.x = -0.97;
+        sphere[index].rotation.y = Math.PI / 4;
+        TweenLite.to(sphere[index].position, { y: 0.6, repeat: -1, duration: 0.6 }); //
+        scene.add(sphere[index]);
+        index += 1;
+      };
+
+      // 鼠标移动
+      const mousermove = (event) => {
+          event.preventDefault();
+          const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+          const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+          const _euler = new THREE.Euler(0, 0, 0, "YXZ");
+          _euler.setFromQuaternion(camera.quaternion);
+          _euler.y += movementX * 0.002 * 1.0;
+          _euler.x += movementY * 0.002 * 1.0;
+          _euler.x = Math.max(
+            Math.PI / 2 - Math.PI,
+            Math.min(Math.PI / 2 - 0, _euler.x)
+          );
+          camera.quaternion.setFromEuler(_euler);
+        };
+
+      // 鼠标点击移动
+      document.addEventListener("mousedown", () => {
+        //相机旋转
+        document.addEventListener('mousemove',mousermove);
+      });
+
+      // 鼠标离开
+      document.addEventListener("mouseup", (event) => {
+
+        event.preventDefault();
+
+        // 鼠标抬起时对比点击位置，如果移动了，则执行旋转视角，如果点击点未移动则执行相机移动
+        if ( event.which == 1 && clickPointX == event.clientX && clickPointY == event.clientY) {
+          // Set mouse and raycaster. 获取点击物体坐标位置
+          const raycaster = new THREE.Raycaster();
+          const mouse = new THREE.Vector2();
+
+          // 计算出 点击屏幕 的 x 和 y 坐标
+          mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+          mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+
+          // 使用光线投射器检测交叉点。
+          raycaster.setFromCamera(mouse, camera);
+
+          //抓取所有可以相交的对象。
+          // 获取点击的位置 获取位置坐标
+          var intersects = raycaster.intersectObjects(colliders);
+          if (intersects.length > 0) {
+            console.log(intersects[0].object.name);
+            if (intersects[0].object.name === "collider-floor") {
+              mousemove(intersects[0].point);
+              TweenLite.to(camera.position, {
+                ...intersects[0].point,
+                y: 2,
+                duration: 2,
+                onComplete() {
+                  sphere.forEach((item) => scene.remove(item));
+                },
+              });
+            }
+          }
+        }
+        document.removeEventListener('mousemove',mousermove);
+      });
+
+      // 创建 添加 模型 并设置材质
+      createColliders(scene, colliders);
+      // 创建相框模型
+      createObjects(scene);
+      // 添加粒子光
+      createLights(scene);
+
+      // 创建文字打字动画
+      setText();
+    };
+  </script>
+</body>
+
 </html>

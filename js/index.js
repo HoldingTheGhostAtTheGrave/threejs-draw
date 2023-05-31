@@ -14,6 +14,7 @@ export class Threejs {
         this.orbitControls = orbitControls ;
         this.cameraPosition = cameraPosition || [2, 2, 6];
         this._init();
+        window.addEventListener('resize',() =>  this.resize());
     }
     _init() {
         this.createScene();
@@ -38,6 +39,11 @@ export class Threejs {
             1000
         );
         this.camera.position.set(...this.cameraPosition);
+    }
+    resize(){
+        console.log(1);
+        this.renderer.setSize(this.el.offsetWidth, this.el.offsetHeight);
+        this.renderer.render(this.scene, this.camera);
     }
     // 创建渲染器
     createRenderer() {
