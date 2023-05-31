@@ -39,7 +39,7 @@ export function point(scene) {
         vertices.push(new Point())
     }
 
-    // 先创建一个空的缓冲几何体
+    // // 先创建一个空的缓冲几何体
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([]), 3)); // 一个顶点由3个坐标构成
 
