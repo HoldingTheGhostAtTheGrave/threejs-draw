@@ -35,7 +35,7 @@ const loader = new THREE.GLTFLoader();
 		( gltf ) => {
 			gltf.scene.traverse( ( child ) => {
 				if(child.name === 'collider-floor'){
-					var texture = new THREE.TextureLoader().load(`img/footer/db.webp`)
+					const texture = new THREE.TextureLoader().load(`img/footer/db.webp`)
 					texture.wrapS = THREE.RepeatWrapping;
 					texture.wrapT = THREE.RepeatWrapping;
 					// uv两个方向纹理重复数量
