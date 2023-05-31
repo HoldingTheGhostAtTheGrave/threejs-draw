@@ -1,5 +1,5 @@
 // 加载模型
-export function createObjects( scene ) {
+export function createObjects( scene , colliders) {
 	const loader = new THREE.GLTFLoader();
 	loader.load(
 		'model/gallery.glb',
@@ -20,6 +20,7 @@ export function createObjects( scene ) {
 				// 设置展画图片贴图
 				if( child.name.includes( 'draw' ) ) {
 					initDraws( child );
+					colliders.push(child);
 				}
 			} );
 			scene.add( gltf.scene );

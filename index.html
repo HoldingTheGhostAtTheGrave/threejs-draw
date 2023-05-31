@@ -132,7 +132,7 @@
           // 获取点击的位置 获取位置坐标
           var intersects = raycaster.intersectObjects(colliders);
           if (intersects.length > 0) {
-            console.log(intersects[0].object.name);
+            // 点击底部
             if (intersects[0].object.name === "collider-floor") {
               mousemove(intersects[0].point);
               TweenLite.to(camera.position, {
@@ -144,6 +144,10 @@
                 },
               });
             }
+            // 点击照片框
+            if(intersects[0].object.name.includes('draw')){
+              console.log(intersects[0].object.name);
+            }
           }
         }
         document.removeEventListener('mousemove', mousermove);
@@ -152,7 +156,7 @@
       // 创建 添加 模型 并设置材质
       createColliders(scene, colliders);
       // 创建相框模型
-      createObjects(scene);
+      createObjects(scene,colliders);
       // 添加粒子光
       createLights(scene);
 
