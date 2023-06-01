@@ -54,7 +54,7 @@ export function point(scene) {
     // 创建材质
     const material = new THREE.PointsMaterial({
         color: '',
-        size: 15,
+        size: 40,
         map: texture, // 纹理图
         transparent: true,// 开启透明度
         depthWrite: false,

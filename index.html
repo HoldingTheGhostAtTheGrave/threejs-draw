@@ -42,15 +42,17 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.4.1/gsap.min.js"></script>
   <script type="module">
     import { Threejs } from "./js/index.js";
-    import { createObjects, createColliders } from "./js/methods.js";
+    import { createObjects, createColliders, getBoxLocation, setFromEuler } from "./js/methods.js";
     import { createLights } from "./js/particleClearance.js";
     import { setText } from './js/domMethods.js';
     import { point } from './js/point.js';
+    import { setFont } from './js/font.js';
 
     window.onload = function () {
       let colliders = [];
       let clickPointX, clickPointY; //记录鼠标点击的位置
       let sphere = [], index = 0;
+
       const { scene, camera, renderer, controls } = new Threejs({
         el: "app",
         isAxesHelper: false,
@@ -93,76 +95,64 @@
         event.preventDefault();
         const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
         const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-        const _euler = new THREE.Euler(0, 0, 0, "YXZ");
-        _euler.setFromQuaternion(camera.quaternion);
-        _euler.y += movementX * 0.002 * 1.0;
-        _euler.x += movementY * 0.002 * 1.0;
-        _euler.x = Math.max(
-          Math.PI / 2 - Math.PI,
-          Math.min(Math.PI / 2 - 0, _euler.x)
-        );
-        camera.quaternion.setFromEuler(_euler);
+        setFromEuler(movementX, movementY, camera);
       };
-
       // 鼠标点击移动
       document.addEventListener("mousedown", () => {
         //相机旋转
         document.addEventListener('mousemove', mousermove);
       });
 
+      // 移动相机
+      const move = (event, intersects) => {
+        mousemove(intersects[0].point);
+        // console.log(event);
+        // setFromEuler(event.pageX / window.innerWidth, 0, camera);
+        TweenLite.to(camera.position, {
+          ...intersects[0].point,
+          y: 2,
+          duration: 2,
+          onComplete() {
+            sphere.forEach((item) => scene.remove(item));
+          },
+        });
+      }
+
       // 鼠标离开
       document.addEventListener("mouseup", (event) => {
-
         event.preventDefault();
-
+        document.removeEventListener('mousemove', mousermove);
         // 鼠标抬起时对比点击位置，如果移动了，则执行旋转视角，如果点击点未移动则执行相机移动
         if (event.which == 1 && clickPointX == event.clientX && clickPointY == event.clientY) {
-          // Set mouse and raycaster. 获取点击物体坐标位置
-          const raycaster = new THREE.Raycaster();
-          const mouse = new THREE.Vector2();
 
-          // 计算出 点击屏幕 的 x 和 y 坐标
-          mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
-          mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+          // 获取点击的物体位置信息
+          const intersects = getBoxLocation(event, camera, renderer, colliders);
+          if (!intersects.length) {
+            return;
+          }
 
-          // 使用光线投射器检测交叉点。
-          raycaster.setFromCamera(mouse, camera);
+          // 点击底部
+          if (intersects[0].object.name === "collider-floor") {
+            move(event, intersects);
+          }
+          // 点击照片框
+          if (intersects[0].object.name.includes('draw')) {
 
-          //抓取所有可以相交的对象。
-          // 获取点击的位置 获取位置坐标
-          var intersects = raycaster.intersectObjects(colliders);
-          if (intersects.length > 0) {
-            // 点击底部
-            if (intersects[0].object.name === "collider-floor") {
-              mousemove(intersects[0].point);
-              TweenLite.to(camera.position, {
-                ...intersects[0].point,
-                y: 2,
-                duration: 2,
-                onComplete() {
-                  sphere.forEach((item) => scene.remove(item));
-                },
-              });
-            }
-            // 点击照片框
-            if(intersects[0].object.name.includes('draw')){
-              console.log(intersects[0].object.name);
-            }
           }
         }
-        document.removeEventListener('mousemove', mousermove);
       });
+
+
 
       // 创建 添加 模型 并设置材质
       createColliders(scene, colliders);
       // 创建相框模型
-      createObjects(scene,colliders);
+      createObjects(scene, colliders);
       // 添加粒子光
       createLights(scene);
 
       // 创建文字打字动画
       setText();
-
 
       point(scene);
     };
