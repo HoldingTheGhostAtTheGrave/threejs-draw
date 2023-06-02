@@ -30,11 +30,35 @@
       right: 0;
       text-align: center;
     }
+    .message{
+      position: absolute;
+      width: 260px;
+      height: 300px;
+      background: rgba(255,255,255, .5);
+      border-radius: 10px;
+      display:none;
+    }
+    .message > .title{
+      text-align: center;
+      font-size: 20px;
+      padding: 5px 0;
+      border-bottom: 1px solid #ccc;
+    }
+    .content{
+      box-sizing: border-box;
+      padding: 10px;
+    }
   </style>
 </head>
 
 <body>
   <div class="text"></div>
+  <div class="message">
+    <div class="title">卡片介绍</div>
+    <div class="content">
+      123123
+    </div>
+  </div>
   <div id="app"></div>
   <script src="js/three/three.min.js"></script>
   <script src="js/three/OrbitControls.js"></script>
@@ -52,6 +76,8 @@
       let colliders = [];
       let clickPointX, clickPointY; //记录鼠标点击的位置
       let sphere = [], index = 0;
+      const content = document.querySelector('.content');
+      const message = document.querySelector('.message');
 
       const { scene, camera, renderer, controls } = new Threejs({
         el: "app",
@@ -92,6 +118,7 @@
 
       // 鼠标移动
       const mousermove = (event) => {
+        message.style.display = 'none';
         event.preventDefault();
         const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
         const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
@@ -102,16 +129,17 @@
         //相机旋转
         document.addEventListener('mousemove', mousermove);
       });
-
+     
       // 移动相机
       const move = (event, intersects) => {
         mousemove(intersects[0].point);
-        // console.log(event);
-        // setFromEuler(event.pageX / window.innerWidth, 0, camera);
-        TweenLite.to(camera.position, {
+        // camera.lookAt(intersects[0].point);
+        let tweenLite = TweenLite.to(camera.position, {
           ...intersects[0].point,
           y: 2,
-          duration: 2,
+          duration: 1.5,
+          onUpdate: function() {
+          },
           onComplete() {
             sphere.forEach((item) => scene.remove(item));
           },
@@ -137,11 +165,20 @@
           }
           // 点击照片框
           if (intersects[0].object.name.includes('draw')) {
+            
 
+            content.innerHTML = intersects[0].object.name;
+            message.style.display = 'block';
+
+            message.style.left = setLftAndBottom(event.clientX , window.innerWidth);
+            message.style.top =setLftAndBottom(event.clientY,window.innerHeight);
           }
         }
       });
 
+      function setLftAndBottom(client , innerWidth, mu = 260){
+        return ( client > (innerWidth - mu) ? client - 260 : client ) + 'px';
+      }
 
 
       // 创建 添加 模型 并设置材质

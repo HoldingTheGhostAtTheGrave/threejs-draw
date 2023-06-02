@@ -104,6 +104,7 @@ function initDraws(child) {
 }
 
 
+// 获取点击位置
 export function getBoxLocation(event,camera,renderer,colliders) {
 	// 获取点击物体坐标位置
 	const raycaster = new THREE.Raycaster();
@@ -132,6 +133,8 @@ export function setFromEuler (movementX,movementY,camera) {
 	  Math.PI / 2 - Math.PI,
 	  Math.min(Math.PI / 2 - 0, _euler.x)
 	);
-	camera.oldEuler = _euler;
 	camera.quaternion.setFromEuler(_euler);
 }
+
+
+// 设置相机的点击移动尽头
