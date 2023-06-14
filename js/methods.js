@@ -20,8 +20,8 @@ export function createObjects(scene, colliders) {
 				// 设置展画图片贴图
 				if (child.name.includes('draw')) {
 					initDraws(child);
-					colliders.push(child);
 				}
+				colliders.push(child);
 			});
 			scene.add(gltf.scene);
 		}

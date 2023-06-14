@@ -84,6 +84,8 @@
         isAxesHelper: false,
         orbitControls: false,
         cameraPosition: [-10, 2.5, 1],
+        // cameraPosition: [-13, 5, -5], //阳台位置
+
       });
 
       const render = () => {
@@ -130,33 +132,45 @@
         document.addEventListener('mousemove', mousermove);
       });
      
-      // 移动相机
-      const move = (event, intersects) => {
-        const targetRotation = intersects[0].point;
-        mousemove(targetRotation);
-        
+
+      // 获取当前相机的视角位置
+      function getCameraTarget () {
         // 获取当前相机的视角方向
         const cameraTarget = new THREE.Vector3();
         cameraTarget.addVectors(camera.position, camera.getWorldDirection(new THREE.Vector3()));
+        return cameraTarget;
+      }
 
-        TweenLite.to(cameraTarget, {
-          ...targetRotation,
-          duration: 1,
-          ease: 'none',
-          onUpdate: function() {
-            camera.lookAt(cameraTarget);
-          },
-          onComplete() {
-            TweenLite.to(camera.position, {
-              ...intersects[0].point,
-              y: 2,
-              duration: 1.5,
-              onComplete() {
-                sphere.forEach((item) => scene.remove(item));
-              },
-            });
-          },
-        });
+      // 移动相机
+      const move = (event, intersects) => {
+        const targetRotation = intersects[0].point;
+
+        mousemove(targetRotation);
+        
+        const cameraTarget = getCameraTarget();
+
+        // 执行相机镜头改变动画
+        const timeline = gsap.timeline();
+        timeline.to(cameraTarget, { ...targetRotation, duration: 0.6, ease: 'none' , onUpdate(){
+          camera.lookAt(cameraTarget);
+        } }).to(camera.position, { ...intersects[0].point , y: 2, duration: 1.5, onComplete(){
+          sphere.forEach((item) => scene.remove(item));
+        } });
+      }
+
+
+      // 移动位置到楼梯
+      function setStairsLocation (event, intersects){
+
+        const onComplete = () => {
+          const cameraTarget = getCameraTarget();
+          const stairsGsap = gsap.timeline();
+
+          stairsGsap.to( cameraTarget, { ...intersects[0].point ,  duration: 0.6 , ease: 'none', onUpdate:() => camera.lookAt(cameraTarget) })
+          .to(camera.position, { x:-13, y:5, z:-5 , duration: 1.5 });
+        }
+        gsap.to(camera.position, { x:-13, y:2.5, z:2 , duration: 1.5 , onComplete })
+        
       }
 
       // 鼠标离开
@@ -171,11 +185,18 @@
           if (!intersects.length) {
             return;
           }
-
+          // 点击楼梯
+          if (intersects[0].object.name === "stairs") {
+            setStairsLocation(event, intersects);
+            return;
+          }
           // 点击底部
           if (intersects[0].object.name === "collider-floor") {
             move(event, intersects);
+            return;
           }
+         
+          console.log(intersects[0].point);
           // 点击照片框
           if (intersects[0].object.name.includes('draw')) {
             content.innerHTML = intersects[0].object.name;
