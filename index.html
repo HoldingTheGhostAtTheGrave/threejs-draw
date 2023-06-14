@@ -56,7 +56,6 @@
   <div class="message">
     <div class="title">卡片介绍</div>
     <div class="content">
-      123123
     </div>
   </div>
   <div id="app"></div>
@@ -64,6 +63,7 @@
   <script src="js/three/OrbitControls.js"></script>
   <script src="js/three/GLTFLoader.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.4.1/gsap.min.js"></script>
+
   <script type="module">
     import { Threejs } from "./js/index.js";
     import { createObjects, createColliders, getBoxLocation, setFromEuler } from "./js/methods.js";
@@ -132,16 +132,29 @@
      
       // 移动相机
       const move = (event, intersects) => {
-        mousemove(intersects[0].point);
-        // camera.lookAt(intersects[0].point);
-        let tweenLite = TweenLite.to(camera.position, {
-          ...intersects[0].point,
-          y: 2,
-          duration: 1.5,
+        const targetRotation = intersects[0].point;
+        mousemove(targetRotation);
+        
+        // 获取当前相机的视角方向
+        const cameraTarget = new THREE.Vector3();
+        cameraTarget.addVectors(camera.position, camera.getWorldDirection(new THREE.Vector3()));
+
+        TweenLite.to(cameraTarget, {
+          ...targetRotation,
+          duration: 1,
+          ease: 'none',
           onUpdate: function() {
+            camera.lookAt(cameraTarget);
           },
           onComplete() {
-            sphere.forEach((item) => scene.remove(item));
+            TweenLite.to(camera.position, {
+              ...intersects[0].point,
+              y: 2,
+              duration: 1.5,
+              onComplete() {
+                sphere.forEach((item) => scene.remove(item));
+              },
+            });
           },
         });
       }
@@ -165,11 +178,8 @@
           }
           // 点击照片框
           if (intersects[0].object.name.includes('draw')) {
-            
-
             content.innerHTML = intersects[0].object.name;
             message.style.display = 'block';
-
             message.style.left = setLftAndBottom(event.clientX , window.innerWidth);
             message.style.top =setLftAndBottom(event.clientY,window.innerHeight);
           }
@@ -180,17 +190,15 @@
         return ( client > (innerWidth - mu) ? client - 260 : client ) + 'px';
       }
 
-
       // 创建 添加 模型 并设置材质
       createColliders(scene, colliders);
       // 创建相框模型
       createObjects(scene, colliders);
       // 添加粒子光
       createLights(scene);
-
       // 创建文字打字动画
       setText();
-
+      // 创建伪星星
       point(scene);
     };
   </script>
