@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            cursor: pointer;
+        }
+
+        #app {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app"></div>
+    <script src="../js/three/three.min.js"></script>
+    <script src="../js/three/OrbitControls.js"></script>
+    <script src="../js/three/GLTFLoader.js"></script>
+    <script type="module">
+        import { Threejs } from "../js/index.js";
+        import { GUI } from '../js/gui.js'
+        const { scene, camera, renderer, controls } = new Threejs({
+            el: "app",
+            isAxesHelper: true,
+            orbitControls: true,
+            cameraPosition: [0, 50, 40],
+        });
+
+
+
+        // 创建地面网格
+        var groundGeometry = new THREE.PlaneGeometry(10, 10); // 设置地面的宽度和高度
+        var groundMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 }); // 设置地面的材质
+        var ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        scene.add(ground); // 将地面网格添加到场景中
+
+        // 调整地面网格的位置和旋转
+        ground.position.set(0, 0, 0); // 设置地面的位置
+        ground.rotation.x = -Math.PI / 2; // 绕X轴旋转90度，使地面朝上
+
+        // 接收阴影
+        ground.receiveShadow = true;
+
+
+
+
+        // 创建立方体
+        var cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+        var cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xcccccc , side:THREE.DoubleSide});
+        var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        cube.position.y = 1;
+        cube.castShadow = true; // 投射阴影
+        scene.add(cube);
+
+        const grid = new THREE.GridHelper(20, 40, 0xffffff, 0xffffff);
+        grid.material.opacity = 0.2;
+        grid.material.depthWrite = false;
+        grid.material.transparent = true;
+        scene.add(grid);
+
+        // 环境关
+        // const light = new THREE.AmbientLight(0x404040); // 柔和的白光
+        // scene.add(light);
+
+        /*
+            聚光灯（SpotLight）
+            光线从一个点沿一个方向射出，随着光线照射的变远，光线圆锥体的尺寸也逐渐增大。
+        */
+        setTimeout(() => {
+            const spotLight = new THREE.SpotLight(0xffffff, 2);
+            spotLight.position.set(0, 2, 0);
+            spotLight.angle = Math.PI / 3.5;
+            scene.add(spotLight);
+        }, 1000);
+        setTimeout(() => {
+            const spotLight1 = new THREE.SpotLight(0xffffff, 0.5);
+            spotLight1.position.set(3, 2, 0);
+            spotLight1.angle = Math.PI / 6;
+            scene.add(spotLight1);
+        }, 2000);
+        setTimeout(() => {
+            const spotLight3 = new THREE.SpotLight(0xffffff, 0.5);
+            spotLight3.position.set(0, 2, 3);
+            spotLight3.angle = Math.PI / 6;
+            scene.add(spotLight3);
+        }, 3000);
+        setTimeout(() => {
+            const spotLight4 = new THREE.SpotLight(0xffffff, 0.5);
+            spotLight4.position.set(0, 2, -3);
+            spotLight4.angle = Math.PI / 6;
+            scene.add(spotLight4);
+        }, 4000);
+        setTimeout(() => {
+            const spotLight5 = new THREE.SpotLight(0xffffff, 0.5);
+            spotLight5.position.set(-3, 2, 0);
+            spotLight5.angle = Math.PI / 6;
+            scene.add(spotLight5);
+        }, 5000);
+        let isRotation = false;
+        setTimeout(() => {
+            isRotation = true;
+        }, 6000);
+
+        // const spotLight1Options = {
+        //     x:3, y:2,z: 0
+        // }
+        // const guiSpotLight1 = new GUI();
+
+        // guiSpotLight1.add(spotLight1Options, 'x',0,10).onChange(function(value) {
+        //     spotLight1.position.x = value;
+        // });
+
+
+        // var light = new THREE.DirectionalLight(0xffffff, 0.5);
+        // light.position.set(5, 5, 5);
+        // light.castShadow = true; // 投射阴影
+        // scene.add(light);
+
+
+
+        // var light = new THREE.PointLight(0xff0000, 1, 10);
+        // light.position.set(2, 2, 0);
+        // scene.add(light);
+
+        function groundRotation (){
+            ground.rotation.z += 0.02;
+            cube.rotation.y += 0.02;
+        }
+
+
+        const render = () => {
+            renderer.render(scene, camera);
+            // 控制器
+            controls && controls.update();
+            requestAnimationFrame(render);
+            const time = -performance.now() / 1000;
+		    grid.position.z = -time % 1;
+            isRotation && groundRotation();
+        };
+        render();
+
+    </script>
+</body>
+
+</html>

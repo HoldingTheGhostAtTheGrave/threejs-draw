@@ -75,7 +75,7 @@
     window.onload = function () {
       let colliders = [];
       let clickPointX, clickPointY; //记录鼠标点击的位置
-      let sphere = [], index = 0;
+      let sphere = [], index = 0 , stairsLocation = false;
       const content = document.querySelector('.content');
       const message = document.querySelector('.message');
 
@@ -151,11 +151,9 @@
 
         // 执行相机镜头改变动画
         const timeline = gsap.timeline();
-        timeline.to(cameraTarget, { ...targetRotation, duration: 0.6, ease: 'none' , onUpdate(){
-          camera.lookAt(cameraTarget);
-        } }).to(camera.position, { ...intersects[0].point , y: 2, duration: 1.5, onComplete(){
-          sphere.forEach((item) => scene.remove(item));
-        } });
+        timeline
+        .to(cameraTarget, { ...targetRotation, duration: 0.6, ease: 'none' , onUpdate:() => camera.lookAt(cameraTarget)})
+        .to(camera.position, { ...intersects[0].point , y: 2, duration: 1.5, onComplete:() => sphere.forEach((item) => scene.remove(item)) });
       }
 
 
@@ -166,7 +164,8 @@
           const cameraTarget = getCameraTarget();
           const stairsGsap = gsap.timeline();
 
-          stairsGsap.to( cameraTarget, { ...intersects[0].point ,  duration: 0.6 , ease: 'none', onUpdate:() => camera.lookAt(cameraTarget) })
+          stairsGsap
+          .to( cameraTarget, { ...intersects[0].point ,  duration: 0.6 , ease: 'none', onUpdate:() => camera.lookAt(cameraTarget) })
           .to(camera.position, { x:-13, y:5, z:-5 , duration: 1.5 });
         }
         gsap.to(camera.position, { x:-13, y:2.5, z:2 , duration: 1.5 , onComplete })
@@ -182,21 +181,23 @@
 
           // 获取点击的物体位置信息
           const intersects = getBoxLocation(event, camera, renderer, colliders);
+
           if (!intersects.length) {
             return;
           }
+
           // 点击楼梯
           if (intersects[0].object.name === "stairs") {
             setStairsLocation(event, intersects);
             return;
           }
+
           // 点击底部
           if (intersects[0].object.name === "collider-floor") {
             move(event, intersects);
             return;
           }
          
-          console.log(intersects[0].point);
           // 点击照片框
           if (intersects[0].object.name.includes('draw')) {
             content.innerHTML = intersects[0].object.name;

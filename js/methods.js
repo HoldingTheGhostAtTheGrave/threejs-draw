@@ -15,7 +15,7 @@ export function createObjects(scene, colliders) {
 				}
 				// 设置展画边框贴图
 				if (child.name.includes('paint')) {
-					initFrames(child);
+					initFrames(child); 
 				}
 				// 设置展画图片贴图
 				if (child.name.includes('draw')) {

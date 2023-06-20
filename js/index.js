@@ -41,7 +41,6 @@ export class Threejs {
         this.camera.position.set(...this.cameraPosition);
     }
     resize(){
-        console.log(1);
         this.renderer.setSize(this.el.offsetWidth, this.el.offsetHeight);
         this.renderer.render(this.scene, this.camera);
     }
@@ -60,6 +59,7 @@ export class Threejs {
     // 添加控制器
     creacteOrbitControls(){
         this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.autoRotate  = true
         this.controls.enableDamping = true;
         this.controls.maxDistance = 9;
         this.controls.target.set(0, 0.5, 0);
